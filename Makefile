@@ -8,7 +8,7 @@ AM_CFLAGS = -Wall
 
 TARGET = bebe_server
 
-OBJS = bebe_main.o bb_util.o bb_connection.o
+OBJS = bebe_main.o bb_util.o bb_connection.o bb_conn.o bb_malloc.o
 
 all: $(TARGET)
 # ----------- Application --------------------------------------------------

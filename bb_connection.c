@@ -10,6 +10,7 @@
 
 #include "bb_util.h"
 #include "bb_log.h"
+#include "bb_conn.h"
 
 int
 __creat_listen(char *ip, int port) {
@@ -48,12 +49,9 @@ bb_creat_listen(char *ip, int port) {
 }
 
 int
-bb_accept_connect(int listen_fd) {
+__accept(int listen_fd, struct sockaddr_in *cli_addr) {
     int cli_fd;
-    int cli_port;
-    char cli_ip[32];
     socklen_t len;
-    struct sockaddr_in cli_addr;
 
     while(1) {
         cli_fd = accept(listen_fd, (struct sockaddr*)&cli_addr, &len);
@@ -65,15 +63,35 @@ bb_accept_connect(int listen_fd) {
                 return -1;
             }
         }
-
-        cli_port = ntohs(cli_addr.sin_port);
-        inet_ntop(AF_INET, &(cli_addr.sin_addr), cli_ip, 31);
-        blog_info("sock:%d accept new connection(sock:%d %s:%d)", listen_fd, cli_fd, cli_ip, cli_port);
-
-        bb_set_nonblock(cli_fd);
-        bb_set_tcp_keepalive(cli_fd);
-        bb_set_tcp_nodelay(cli_fd);
-
         return cli_fd;
     }
+}
+
+bb_conn_t *
+bb_accept(int listen_fd) {
+    int        cli_port;
+    char       cli_ip[32];
+    bb_conn_t  *conn;
+
+    conn = bb_conn_creat();
+    if (conn == NULL) {
+        blog_error("malloc buff for bb_conn_t error %d", errno);
+        return NULL;
+    }
+
+    conn->fd = __accept(listen_fd, &(conn->addr));
+    if (conn->fd == -1) {
+        bb_conn_destroy(conn);
+        return NULL;
+    }
+
+    cli_port = ntohs(conn->addr.sin_port);
+    inet_ntop(AF_INET, &(conn->addr.sin_addr), cli_ip, 31);
+    blog_info("sock:%d accept new connection(sock:%d %s:%d)", listen_fd, conn->fd, cli_ip, cli_port);
+
+    bb_set_nonblock(conn->fd);
+    bb_set_tcp_keepalive(conn->fd);
+    bb_set_tcp_nodelay(conn->fd);
+
+    return conn;
 }
