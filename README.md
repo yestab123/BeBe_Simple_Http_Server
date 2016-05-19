@@ -4,6 +4,8 @@ Version:5(rebuild)
 
 Updated:20160519
 
-CopyRight (C) Ziv Chow 2016.
+Copyright 2016 Ziv Chow.
+
+This is just a small toy.
 
 
