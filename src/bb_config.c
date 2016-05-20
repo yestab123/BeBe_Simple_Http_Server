@@ -2,8 +2,75 @@
 #include <stdlib.h>
 #include <string.h>
 
-static char config_save[50][100];
+#define CONFIG_COUNT  50
+#define CONFIG_LENGTH 100
+
+static char config_save[CONFIG_COUNT][CONFIG_LENGTH];
 static int  config_count = 0;
+
+/* Get key idx in config_save */
+static int
+__config_get_key_idx(char *key) {
+    int i;
+
+    if (key == NULL) {
+        return -1;
+    }
+
+    for (i = 0; i < CONFIG_COUNT; i++) {
+        if (strncmp(key, config_save[i], strlen(key)) == 0) {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
+/* Get equal symbal idx in config_save[idx] */
+static int
+__config_get_equal_idx(int idx) {
+    int i;
+
+    if (idx >= CONFIG_COUNT) {
+        return -1;
+    }
+
+    for (i = 0; i < CONFIG_LENGTH; i++) {
+        if (config_save[idx][i] == '=') {
+            return ++i;
+        }
+    }
+
+    return -1;
+}
+
+/* Get string value from config_save[idx][e_idx] */
+static char *
+__config_get_string_value(int idx, int e_idx) {
+    int  i, t;
+    char value[CONFIG_LENGTH];
+
+    memset(value, '\0', CONFIG_LENGTH);
+
+    if (config_save[idx][e_idx] != '"') {
+        return NULL;
+    }
+
+    for (i = e_idx + 1, t = 0; i < CONFIG_LENGTH; i++) {
+        if (config_save[idx][i] == '"') {
+            if (t <= 0) {
+                return NULL;
+            } else {
+                strncpy(value, config_save[idx][e_idx+1], t);
+                return value;
+            }
+        } else {
+            t++;
+        }
+    }
+
+    return NULL;
+}
 
 /* Delete All Blank key */
 int
@@ -38,6 +105,55 @@ bb_config_delete_blank(char *save, int save_len, char *string) {
     } else {
         return 0;
     }
+}
+
+
+/* Get int value */
+int
+bb_config_get_int(char *key, int *value) {
+    int  i, t;
+
+    if (key == NULL || value == NULL) {
+        return -1;
+    }
+
+    i = __config_get_key_idx(key);
+    if (i == -1) {
+        return -1;
+    }
+
+    t = __config_get_equal_idx(i);
+    if (t == -1) {
+        return -1;
+    }
+
+    *value = atoi(config_save[i] + t);
+    return 0;
+}
+
+/* Get string value */
+int
+bb_config_get_string(char *key, char *value, int length) {
+    int   i, t;
+    char *point;
+
+    i = __config_get_key_idx(key);
+    if (i == -1) {
+        return -1;
+    }
+
+    t = __config_get_equal_idx(i);
+    if (t == -1) {
+        return -1;
+    }
+
+    point = __config_get_string_value(i, t);
+    if (point == NULL) {
+        return -1;
+    }
+
+    strncpy(value, point, length);
+    return 0;
 }
 
 /* Test Case */
