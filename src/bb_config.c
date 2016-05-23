@@ -26,7 +26,7 @@ __config_get_key_idx(char *key) {
     return -1;
 }
 
-/* Get equal symbal idx in config_save[idx] */
+/* Get equal symbol idx in config_save[idx] */
 static int
 __config_get_equal_idx(int idx) {
     int i;
