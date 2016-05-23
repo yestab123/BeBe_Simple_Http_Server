@@ -45,10 +45,12 @@ __config_get_equal_idx(int idx) {
 }
 
 /* Get string value from config_save[idx][e_idx] */
+/* May have some problem, need to test. */
+/* NEED_TO_TEST */
 static char *
 __config_get_string_value(int idx, int e_idx) {
     int  i, t;
-    char value[CONFIG_LENGTH];
+    static char value[CONFIG_LENGTH];
 
     memset(value, '\0', CONFIG_LENGTH);
 
@@ -61,7 +63,7 @@ __config_get_string_value(int idx, int e_idx) {
             if (t <= 0) {
                 return NULL;
             } else {
-                strncpy(value, config_save[idx][e_idx+1], t);
+                strncpy(value, config_save[idx]+e_idx+1, t);
                 return value;
             }
         } else {

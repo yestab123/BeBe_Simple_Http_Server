@@ -33,10 +33,10 @@ __process_flag_set(char *option) {
 }
 
 /* Parse the command input option */
-static int
+static void
 __cmd_parse(int argc, char **argv) {
 #define SIGNAL_ACT_SIZE 20
-    char  *ch;
+    char   ch;
     int    signal_flag = 0;
     char   signal_act[SIGNAL_ACT_SIZE];
 
