@@ -54,7 +54,7 @@ __accept(int listen_fd, struct sockaddr_in *cli_addr) {
     socklen_t len;
 
     while(1) {
-        cli_fd = accept(listen_fd, (struct sockaddr*)&cli_addr, &len);
+        cli_fd = accept(listen_fd, (struct sockaddr*)cli_addr, &len);
         if (cli_fd < 0) {
             if (errno == EINTR) {
                 continue;
