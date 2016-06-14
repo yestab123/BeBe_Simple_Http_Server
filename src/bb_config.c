@@ -5,6 +5,7 @@
 #define CONFIG_COUNT  50
 #define CONFIG_LENGTH 100
 
+/* Each Items in Config file will first save in below */
 static char config_save[CONFIG_COUNT][CONFIG_LENGTH];
 static int  config_count = 0;
 
@@ -158,6 +159,33 @@ bb_config_get_string(char *key, char *value, int length) {
     return 0;
 }
 
+int
+bb_config_load(char *conf_file_path) {
+    FILE *fp;
+    char temp_config[CONFIG_LENGTH];
+
+    if (conf_file_path == NULL) {
+        return -1;
+    }
+
+    fp = fopen(conf_file_path, "r");
+    if (fp == NULL) {
+        blog_error("open %s config file error %d", conf_file_path, errno);
+        return -1;
+    }
+
+    while(fgets(temp_config, CONFIG_LENGTH, fp) != EOF) {
+        if (config_count > CONFIG_COUNT) {
+            blog_error("%s config file too much config items",conf_file_path);
+            break;
+        }
+        strcpy(config_save[config_count], temp_config);
+        config_count++;
+    }
+
+    fclose(fp);
+    return 0;
+}
 /* Test Case */
 /* int */
 /* main() { */

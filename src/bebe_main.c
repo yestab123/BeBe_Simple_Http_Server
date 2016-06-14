@@ -8,8 +8,10 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <signal.h>
 
 #include "bb_log.h"
+#include "bb_malloc.h"
 
 extern char *optarg;
 extern int optind, opterr, optopt;
@@ -19,7 +21,7 @@ static int process_stop = 0;
 static int process_reload = 0;
 static int process_status = 0;
 static char default_conf_file[] = "bebe.conf";
-static char *conf_file;
+static char *conf_file = NULL;
 
 /* Set Command Option -s flag */
 static void
@@ -49,7 +51,8 @@ __cmd_parse(int argc, char **argv) {
     int    signal_flag = 0;
     char   signal_act[SIGNAL_ACT_SIZE];
 
-
+    /* s -> signal command option(such as:reload, stop, status) */
+    /* c -> setting user define conf file path */
     while((ch = getopt(argc, argv, "s:c:")) != -1) {
         switch(ch) {
         case 's':
@@ -125,35 +128,63 @@ __pid_file_save(char *pid_file, int pid) {
 int
 main(int argc, char **argv) {
     char *pid_file = NULL;
+    char *_conf_file = NULL;
     int   pid;
 
     /* Parse Command Option */
-    conf_file = default_conf_file;
     __cmd_parse(argc, argv);
 
-    /* Get pid file path */
+    /* Setting Config file path */
+    if (conf_file == NULL) {
+        _conf_file = default_conf_file;
+    } else {
+        _conf_file = conf_file
+    }
+
+    /* Get pid file path from conf_file */
+
 
     /* Command Option Handle */
     pid = __pid_get(pid_file);
     if (process_stop == 1) {
-
+        if (pid == -1) {
+            blog_error("program not running");
+            exit(0);
+        }
+        /* Send SIGTERM signal and send SIGKILL signal */
+        kill(pid, SIGTERM);
+        blog_info("Sending SIGTERM to program(pid:%d)", pid);
+        sleep(10);
+        kill(pid, SIGKILL);
+        blog_info("Sending SIGKILL to program(pid:%d)", pid);
         exit(0);
     }
 
     if (process_reload == 1) {
-
+        if (pid == -1) {
+            blog_error("program not running");
+            exit(0);
+        }
+        /* Use signo 35 as reload signal */
+        kill(pid, 35);
+        blog_info("Sending reload signal to program(pid:%d)", pid);
         exit(0);
     }
 
     if (process_status == 1) {
-
+        if (pid == -1) {
+            blog_error("program not running");
+        } else {
+            blog_error("program is running(pid:%d)", pid);
+        }
         exit(0);
     }
 
     /* Load Conf */
 
     /* Start Program */
-    int  pid, res;
+    /* 1.Program Exist Judge */
+    int res;
     res = __pid_file_exist(pid_file);
     if (res == 0) {
         blog_error("bebe http server already running.");
@@ -165,5 +196,10 @@ main(int argc, char **argv) {
         blog_error("save pid file error %d", errno);
         abort();
     }
+
+    /* 2.Init Main Frame */
+
+    /* 3.Start Main Logic */
+
 
 }
