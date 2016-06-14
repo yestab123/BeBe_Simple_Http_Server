@@ -1,6 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
+#include <error.h>
+
+#include "bb_log.h"
 
 #define CONFIG_COUNT  50
 #define CONFIG_LENGTH 100
@@ -76,6 +80,7 @@ __config_get_string_value(int idx, int e_idx) {
 }
 
 /* Delete All Blank key */
+/* Src from char *string, and saving to char *save */
 int
 bb_config_delete_blank(char *save, int save_len, char *string) {
     int count = 0, i;
@@ -161,8 +166,9 @@ bb_config_get_string(char *key, char *value, int length) {
 
 int
 bb_config_load(char *conf_file_path) {
+    int   i;
     FILE *fp;
-    char temp_config[CONFIG_LENGTH];
+    char  temp_config[CONFIG_LENGTH];
 
     if (conf_file_path == NULL) {
         return -1;
@@ -174,13 +180,20 @@ bb_config_load(char *conf_file_path) {
         return -1;
     }
 
-    while(fgets(temp_config, CONFIG_LENGTH, fp) != EOF) {
+    while(fgets(temp_config, CONFIG_LENGTH, fp) != NULL) {
         if (config_count > CONFIG_COUNT) {
             blog_error("%s config file too much config items",conf_file_path);
             break;
         }
-        strcpy(config_save[config_count], temp_config);
-        config_count++;
+        /* strcpy(config_save[config_count], temp_config); */
+        i = bb_config_delete_blank(config_save[config_count],
+                                   CONFIG_LENGTH, temp_config);
+        if (i == 0) {
+            config_count++;
+        } else {
+            continue;
+        }
+
     }
 
     fclose(fp);
@@ -194,4 +207,19 @@ bb_config_load(char *conf_file_path) {
 
 /*     int i = bb_config_delete_blank(save, 100, test); */
 /*     printf("%d:%s\n", i, save); */
+/* } */
+
+/* Test Case 2 -> bb_config_load() */
+/* int */
+/* main() { */
+/*     bb_config_load("bebe.conf"); */
+/*     printf("%d\n", config_count); */
+/*     int i; */
+/*     for (i = 0; i < config_count;i++) { */
+/*         printf("%s\n", config_save[i]); */
+/*     } */
+
+/*     char value[30]; */
+/*     bb_config_get_string("pid_file", value, 30); */
+/*     printf("%s\n", value); */
 /* } */

@@ -12,6 +12,7 @@
 
 #include "bb_log.h"
 #include "bb_malloc.h"
+#include "bb_config.h"
 
 extern char *optarg;
 extern int optind, opterr, optopt;
@@ -123,13 +124,18 @@ __pid_file_save(char *pid_file, int pid) {
     return 0;
 }
 
+static int
+__pid_file_delete(char *pid_file) {
+    unlink(pid_file);
+    return 0;
+}
 
 /* Main */
 int
 main(int argc, char **argv) {
-    char *pid_file = NULL;
+    char  pid_file[100];
     char *_conf_file = NULL;
-    int   pid;
+    int   pid, res;
 
     /* Parse Command Option */
     __cmd_parse(argc, argv);
@@ -138,11 +144,16 @@ main(int argc, char **argv) {
     if (conf_file == NULL) {
         _conf_file = default_conf_file;
     } else {
-        _conf_file = conf_file
+        _conf_file = conf_file;
     }
+    bb_config_load(_conf_file);
 
     /* Get pid file path from conf_file */
-
+    res = bb_config_get_string("pid_file", pid_file, 100);
+    if (res == -1) {
+        blog_error("pid_file item not find in conf file");
+        abort();
+    }
 
     /* Command Option Handle */
     pid = __pid_get(pid_file);
@@ -184,7 +195,6 @@ main(int argc, char **argv) {
 
     /* Start Program */
     /* 1.Program Exist Judge */
-    int res;
     res = __pid_file_exist(pid_file);
     if (res == 0) {
         blog_error("bebe http server already running.");
@@ -201,5 +211,7 @@ main(int argc, char **argv) {
 
     /* 3.Start Main Logic */
 
+    /* 4.Clean and Exit */
+    __pid_file_delete(pid_file);
 
 }
