@@ -13,9 +13,13 @@
 #include "bb_log.h"
 #include "bb_malloc.h"
 #include "bb_config.h"
+#include "bb_signal.h"
+#include "bb_daemon.h"
 
 extern char *optarg;
 extern int optind, opterr, optopt;
+
+extern int SIGTERM_FLAG;
 
 /* Command Option Flag */
 static int process_stop = 0;
@@ -137,6 +141,10 @@ main(int argc, char **argv) {
     char *_conf_file = NULL;
     int   pid, res;
 
+
+    signal_handle_set(SIGTERM, signal_SIGTERM_handle);
+    signal_handle_set(SIGINT, signal_SIGTERM_handle);
+
     /* Parse Command Option */
     __cmd_parse(argc, argv);
 
@@ -200,6 +208,9 @@ main(int argc, char **argv) {
         blog_error("bebe http server already running.");
         abort();
     }
+
+    bb_set_into_daemon();
+
     pid = getpid();
     res = __pid_file_save(pid_file, pid);
     if (res < 0) {
@@ -210,6 +221,9 @@ main(int argc, char **argv) {
     /* 2.Init Main Frame */
 
     /* 3.Start Main Logic */
+    while(SIGTERM_FLAG == 0) {
+        sleep(1);
+    }
 
     /* 4.Clean and Exit */
     __pid_file_delete(pid_file);
