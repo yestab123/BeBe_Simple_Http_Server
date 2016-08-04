@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <sys/epoll.h>
+#include <errno.h>
 
 #include "bb_epoll.h"
 #include "bb_conn.h"
@@ -42,4 +43,6 @@ bb_server_loop(int epfd, int timeout) {
             conn->epoll_err_handle(conn);
         }
     }
+
+    return 0;
 }
