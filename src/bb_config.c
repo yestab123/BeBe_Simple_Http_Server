@@ -164,6 +164,37 @@ bb_config_get_string(char *key, char *value, int length) {
     return 0;
 }
 
+char *
+bb_config_get_string_malloc(char *key) {
+    int  i, t;
+    char *point, *p;
+
+    i = __config_get_key_idx(key);
+    if (i == -1) {
+        return NULL;
+    }
+
+    t = __config_get_equal_idx(i);
+    if (t == -1) {
+        return NULL;
+    }
+
+    point = __config_get_string_value(i, t);
+    if (point == NULL) {
+        return NULL;
+    }
+
+    p = malloc(strlen(point) + 1);
+    if (p == NULL) {
+        return NULL;
+    }
+
+    strcpy(p, point);
+    p[strlen(point)] = '\0';
+
+    return p;
+}
+
 int
 bb_config_load(char *conf_file_path) {
     int   i;
