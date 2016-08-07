@@ -3,6 +3,8 @@
 #include <string.h>
 #include <malloc.h>
 
+#include "bb_http.h"
+
 /*
   HTTP PHASE FIND Function.
   If length not enough, return -2, and try parse again.
@@ -37,7 +39,7 @@ http_method_parse(bb_conn_t *conn, char *buff, int length) {
     return -1;
 
  METHOD_PHASE_CHANGE:
-    conn->phase &= ^HTTP_METHOD_PHASE;
+    conn->phase &= ~HTTP_METHOD_PHASE;
     conn->phase &= HTTP_URL_PHASE;
     return 0;
 }
@@ -79,7 +81,7 @@ http_url_position(bb_conn_t *conn, char *buff, int length) {
                 flag = 2;
                 conn->http.url.end = pos - 1;
                 conn->http.url.len = conn->http.url.end - conn->http.url.start + 1;
-                conn->phase &= ^HTTP_URL_PHASE;
+                conn->phase &= ~HTTP_URL_PHASE;
                 conn->phase &= HTTP_CONTENT_LENGTH_PHASE;
                 return 0;
             }
@@ -95,9 +97,11 @@ http_url_position(bb_conn_t *conn, char *buff, int length) {
  */
 int
 http_content_length_phase(bb_conn_t *conn, char *buff, int length) {
-    if (conn->http.method == GET || conn->http.method == HEAD) {
+    if (conn->http.method == METHOD_GET || conn->http.method == METHOD_HEAD) {
         conn->phase = 0;
         conn->phase = CONN_RECV_FINISH_PHASE;
         return 0;
     }
+
+    return 0;
 }
