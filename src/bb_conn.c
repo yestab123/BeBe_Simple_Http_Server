@@ -14,9 +14,9 @@ bb_conn_creat() {
 void
 bb_conn_destroy(bb_conn_t *conn) {
     if (conn->fd == -1) {
-        
+
     } else {
-        
+
     }
 
     bb_free(conn);

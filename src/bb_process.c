@@ -46,3 +46,38 @@ bb_server_loop(int epfd, int timeout) {
 
     return 0;
 }
+
+int
+conn_in_handle(bb_conn_t *conn) {
+    if (conn->phase & CONN_RECV_PHASE) {
+        
+    }
+
+    if (conn->phase & HTTP_METHOD_PHASE) {
+        
+    }
+
+    if (conn->phase & HTTP_URL_PHASE) {
+        
+    }
+
+    if (conn->phase & HTTP_CONTENT_LENGTH_PHASE) {
+        
+    }
+
+    if (conn->phase & HTTP_CONTENT_RECV_PHASE) {
+        
+    }
+
+
+}
+
+int
+conn_out_handle(bb_conn_t *conn) {
+    
+}
+
+int
+conn_err_handle(bb_conn_t *conn) {
+    
+}

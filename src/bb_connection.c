@@ -52,7 +52,7 @@ int
 __accept(int listen_fd, struct sockaddr_in *cli_addr) {
     int cli_fd;
     socklen_t len;
-    
+
     len = sizeof(struct sockaddr_in);
 
     while(1) {
